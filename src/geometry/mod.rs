@@ -10,14 +10,15 @@ use num::{One, Zero, Bounded, Float, Integer};
 use alga::general::{ClosedSub, ClosedMul, ClosedAdd, ClosedDiv};
 use ::util;
 
-pub trait naFloat: na::Scalar + One + Zero + Bounded + Float + ClosedSub + ClosedMul + ClosedAdd + ClosedDiv{}
-pub trait naInt: na::Scalar + One + Zero + Bounded + Integer + ClosedSub + ClosedMul + ClosedAdd + ClosedDiv {}
-pub trait naNum: naFloat + Integer {}
+pub trait naBase: na::Scalar + One + Zero + Bounded + ClosedSub + ClosedMul + ClosedAdd + ClosedDiv{}
+pub trait naFloat: Float + naBase {}
+pub trait naInt: Integer + naBase {}
+pub trait naNum: Float + Integer + naBase {}
 
-//impl naFloat for f32 {}
-impl naFloat for f64 {}
-impl naInt for i32 {}
-impl naInt for i64 {}
+impl naBase for f32 {}
+impl naBase for f64 {}
+impl naBase for i32 {}
+impl naBase for i64 {}
 
 fn face_forward(v1: &na::Vector3<f64>, v2: &na::Vector3<f64>) -> na::Vector3<f64> {
     if v1.dot(v2) < 0.0 {
@@ -59,7 +60,7 @@ impl Interpolatable for f64 {
 }
 
 impl<T> Interpolatable for na::Vector2<T> where 
-    T: naFloat {
+    T: naBase {
     type V1 = na::Vector2<T>;
     type V2 = na::Vector2<T>;
     type A = T;
@@ -69,7 +70,7 @@ impl<T> Interpolatable for na::Vector2<T> where
 }
 
 impl<T> Interpolatable for na::Vector3<T> where 
-    T: naFloat {
+    T: naBase {
     type V1 = na::Vector3<T>;
     type V2 = na::Vector3<T>;
     type A = T;
@@ -79,7 +80,7 @@ impl<T> Interpolatable for na::Vector3<T> where
 }
 
 impl<T> Interpolatable for na::Point2<T> where 
-    T: naFloat {
+    T: naBase {
     type V1 = na::Point2<T>;
     type V2 = na::Point2<T>;
     type A = T;
@@ -95,7 +96,7 @@ impl<T> Interpolatable for na::Point2<T> where
 }
 
 impl<T> Interpolatable for na::Point3<T> where 
-    T: naFloat {
+    T: naBase {
     type V1 = na::Point3<T>;
     type V2 = na::Point3<T>;
     type A = T;
