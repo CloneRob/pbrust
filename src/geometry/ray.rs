@@ -1,8 +1,10 @@
-use na;
+use cg;
+use cg::prelude::*;
+
 use num::{Zero, Float};
 
 pub trait BaseRay {
-    fn get_position(&self) -> na::Point3<f64>;
+    fn get_position(&self) -> cg::Point3<f64>;
 }
 
 struct Medium {
@@ -10,8 +12,8 @@ struct Medium {
 }
 
 struct Ray<'med> {
-    o: na::Point3<f64>,
-    d: na::Vector3<f64>,
+    o: cg::Point3<f64>,
+    d: cg::Vector3<f64>,
     medium: Option<&'med Medium>,
     tmax: f64,
     time: f64,
@@ -20,8 +22,8 @@ struct Ray<'med> {
 impl<'med> Default for Ray<'med> {
     fn default() -> Ray<'med> {
         Ray {
-            o: na::Point3::origin(),
-            d: na::Vector3::zero(),
+            o: cg::Point3::origin(),
+            d: cg::Vector3::zero(),
             medium: None,
             tmax: Float::infinity(),
             time: 0.0,
@@ -30,7 +32,7 @@ impl<'med> Default for Ray<'med> {
 }
 
 impl<'med> BaseRay for Ray<'med> {
-    fn get_position(&self) -> na::Point3<f64> {
+    fn get_position(&self) -> cg::Point3<f64> {
         return self.time * (self.o + self.d);
     }
 }
@@ -38,10 +40,10 @@ impl<'med> BaseRay for Ray<'med> {
 struct RayDifferential<'med> {
     ray: Ray<'med>,
     has_differential: bool,
-    rx_origin: na::Point3<f64>,
-    ry_origin: na::Point3<f64>,
-    rx_direction: na::Vector3<f64>,
-    ry_direction: na::Vector3<f64>,
+    rx_origin: cg::Point3<f64>,
+    ry_origin: cg::Point3<f64>,
+    rx_direction: cg::Vector3<f64>,
+    ry_direction: cg::Vector3<f64>,
 }
 
 impl<'med> Default for RayDifferential<'med> {
@@ -49,16 +51,16 @@ impl<'med> Default for RayDifferential<'med> {
         RayDifferential {
             ray: Ray::default(),
             has_differential: false,
-            rx_origin: na::Point3::origin(),
-            ry_origin: na::Point3::origin(),
-            rx_direction: na::Vector3::zero(),
-            ry_direction: na::Vector3::zero(),
+            rx_origin: cg::Point3::origin(),
+            ry_origin: cg::Point3::origin(),
+            rx_direction: cg::Vector3::zero(),
+            ry_direction: cg::Vector3::zero(),
         }
     }
 }
 
 impl<'med> BaseRay for RayDifferential<'med> {
-    fn get_position(&self) -> na::Point3<f64> {
+    fn get_position(&self) -> cg::Point3<f64> {
         return self.ray.time * (self.ray.o + self.ray.d);
     }
 }
@@ -68,10 +70,10 @@ impl<'med> From<Ray<'med>> for RayDifferential<'med> {
         RayDifferential {
             ray: r,
             has_differential: false,
-            rx_origin: na::Point3::origin(),
-            ry_origin: na::Point3::origin(),
-            rx_direction: na::Vector3::zero(),
-            ry_direction: na::Vector3::zero(),
+            rx_origin: cg::Point3::origin(),
+            ry_origin: cg::Point3::origin(),
+            rx_direction: cg::Vector3::zero(),
+            ry_direction: cg::Vector3::zero(),
         }
     }
 }

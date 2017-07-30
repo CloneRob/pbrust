@@ -1,12 +1,15 @@
 use std::convert::From;
 
-use na;
+use cg::{Point2, Point3, Vector2, Vector3};
+use cg::{BaseFloat};
+use cg::prelude::*;
+
+use num::Bounded;
+
 use std::ops::Add;
-use na::{Point2, Point3, Vector2, Vector3};
-use num::{Zero, Bounded, Integer};
 use std::cmp::{PartialOrd, PartialEq};
 
-use ::geometry::{Interpolatable, naFloat, naInt, naBase};
+use ::geometry::{Interpolate};
 
 
 trait InsideBounds {
@@ -15,7 +18,7 @@ trait InsideBounds {
     fn inside_exclusive(&self, b: &Self::B) -> bool;
 }
 
-impl<T: naBase + PartialOrd> InsideBounds for Point2<T> {
+impl<T: BaseFloat> InsideBounds for Point2<T> {
     type B = Bounds2<T>;
     fn inside(&self, b: &Self::B) -> bool {
        self.x >= b.p_min.x && self.x <= b.p_max.x && self.y >= b.p_min.y && self.y <= b.p_max.y
@@ -27,12 +30,12 @@ impl<T: naBase + PartialOrd> InsideBounds for Point2<T> {
 
 #[derive(Copy, Clone, Debug)]
 pub struct Bounds2<T> where 
-    T: naBase {
+    T: BaseFloat {
     p_min: Point2<T>,
     p_max: Point2<T>,
 }
 
-impl<T: naBase> Bounds2<T> {
+impl<T> Bounds2<T> where T: BaseFloat{
 
     fn zero() -> Bounds2<T> {
         Bounds2 {
@@ -51,22 +54,23 @@ impl<T: naBase> Bounds2<T> {
 
     fn from_vectors(v1: Vector2<T>, v2: Vector2<T>) -> Bounds2<T> {
         Bounds2 {
-            p_min: Point2::from_coordinates(v1),
-            p_max: Point2::from_coordinates(v2),
+            p_min: Point2::from_vec(v1),
+            p_max: Point2::from_vec(v2),
         }
     }
 
     fn expand(&self, delta: T) -> Bounds2<T> {
         let delta_vec = Vector2::new(delta, delta);
+        // let p_min = self.p_min - delta_vec;
+        // let p_max = self.p_max + delta_vec;
+        let p_min = self.p_min;
+        let p_max = self.p_max;
         Bounds2 {
-            p_min: self.p_min - delta_vec,
-            p_max: self.p_max + delta_vec,
+            p_min: p_min,
+            p_max: p_max,
         }
     }
-}
 
-impl<T> Bounds2<T> where
-    T: naBase + PartialOrd {
     fn maximum_extend(&self) -> u8 {
         let diag = self.diagonal();
         if diag.x > diag.y {
@@ -84,12 +88,12 @@ impl<T> Bounds2<T> where
         if self.p_max.y > self.p_min.y {
             o.y /= self.p_max.y - self.p_min.y;
         }
-        Point2::from_coordinates(o)
+        Point2::from_vec(o)
     }
 }
 
 impl<T> Bounds2<T> where
-    T: naBase + Interpolatable<A=T, V1=T, V2=T> {
+    T: BaseFloat + Interpolate<A=T, V1=T, V2=T> {
     fn lerp(&self, t: &Point2<T>) -> Point2<T> {
         Point2::new(self.p_min.x.lerp(t.x, &self.p_max.x),
                     self.p_min.y.lerp(t.y, &self.p_max.y))
@@ -97,7 +101,7 @@ impl<T> Bounds2<T> where
 }
 
 impl<T> Default for Bounds2<T> where 
-    T: naBase {
+    T: BaseFloat + Bounded {
     fn default() -> Bounds2<T> {
         let min = Bounded::min_value();
         let max = Bounded::max_value();
@@ -110,7 +114,7 @@ impl<T> Default for Bounds2<T> where
 }
 
 impl<'p, T> From<&'p Point2<T>> for Bounds2<T> where 
-    T: naBase {
+    T: BaseFloat {
     fn from(t: &'p Point2<T>) -> Self {
         Bounds2 {
             p_min: t.clone(), 
@@ -120,7 +124,7 @@ impl<'p, T> From<&'p Point2<T>> for Bounds2<T> where
 }
 
 impl<T> PartialEq for Bounds2<T> where 
-    T: naBase + PartialOrd {
+    T: BaseFloat {
     fn eq(&self, other: &Bounds2<T>) -> bool {
         if self.p_min == other.p_min &&
            self.p_max == other.p_max {
