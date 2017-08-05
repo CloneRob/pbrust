@@ -1,6 +1,7 @@
 pub mod bounds;
 pub mod ray;
 pub mod transform;
+pub mod normal;
 
 use ::cg;
 use std::cmp;
