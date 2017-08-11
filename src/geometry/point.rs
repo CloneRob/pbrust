@@ -8,10 +8,10 @@ use super::{Vector, VectorSpace, Metric};
 use super::Point;
 use super::vector::{Vector2, Vector3};
 
-type Point2f = Point2<f32>;
-type Point2i = Point2<i32>;
-type Point3f = Point3<f32>;
-type Point3i = Point3<i32>;
+pub type Point2f = Point2<f32>;
+pub type Point2i = Point2<i32>;
+pub type Point3f = Point3<f32>;
+pub type Point3i = Point3<i32>;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point2<S: Scalar> {

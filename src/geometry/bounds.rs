@@ -35,9 +35,10 @@ pub trait Bounds {
     fn diagonal(&self) -> Self::Vector;
     fn surface_area(&self) -> Self::Scalar;
     fn volume(&self) -> Self::Scalar;
-    fn maximum_extent(&self) -> Self::Scalar;
-    fn lerp(&self, t: Self::Point) -> Self::Point;
-    fn offset(&self, p: Self::Point) -> Self::Vector;
+    fn maximum_extent(&self) -> u8;
+    fn lerp(&self, t: &Self::Point) -> Self::Point;
+    fn offset(&self, p: &Self::Point) -> Self::Vector;
+    fn bounding_sphere(&self) -> (Self::Point, f32);
 }
 
 
@@ -163,106 +164,201 @@ impl<S: Scalar> Bounds for Bounds2<S> {
     fn volume(&self) -> Self::Scalar {
         S::zero()
     }
-    fn maximum_extent(&self) -> Self::Scalar {
-        unimplemented!()
+    fn maximum_extent(&self) -> u8 {
+        let d = self.diagonal();
+        if d.x > d.y {
+            0
+        } else {
+            1
+        }
     }
-    fn lerp(&self, t: Self::Point) -> Self::Point {
+    fn lerp(&self, t: &Self::Point) -> Self::Point {
         let x = super::lerp(t.x, self.p_min.x, self.p_max.x);
         let y = super::lerp(t.y, self.p_min.y, self.p_max.y);
         Point2::new(x, y)
     }
 
-    fn offset(&self, p: Self::Point) -> Self::Vector {
-        unimplemented!()
+    fn offset(&self, p: &Self::Point) -> Self::Vector {
+        let mut offset = &*p - &self.p_min;
+        if self.p_max.x > self.p_min.x {
+            offset.x = offset.x / (self.p_max.x - self.p_min.x);
+        }
+        if self.p_max.y > self.p_min.y {
+            offset.y = offset.y / (self.p_max.y - self.p_min.y);
+        }
+        offset
+    }
+    fn bounding_sphere(&self) -> (Self::Point, f32) {
+        let center = (self.p_min + self.p_max)  / (S::one() + S::one());
+        let radius = if Bounds::inside(&center, self) {
+            Point::distance(&center, &self.p_max).to_f32().expect("Panic on bounding sphere radius calculation cast")
+        } else {
+            S::zero().to_f32().expect("Panic on casting S::zero() to f32")
+        };
+        (center, radius)
     }
 }
 
-// impl<S> Bounds2<S> where S: Scalar{
+#[derive(Copy, Clone, Debug)]
+pub struct Bounds3<S: Scalar> {
+    p_min: Point3<S>,
+    p_max: Point3<S>,
+}
+impl<S> Default for Bounds3<S>
+    where S: Scalar + Bounded
+{
+    fn default() -> Bounds3<S> {
+        let min = Bounded::min_value();
+        let max = Bounded::max_value();
 
-//     fn zero() -> Bounds2<S> {
-//         Bounds2 {
-//             p_min: Point2::zero(),
-//             p_max: Point2::zero(),
-//         }
-//     }
-//     fn diagonal(&self) -> Vector2<S> {
-//         Vector2::from(self.p_max - self.p_min)
-//     }
+        Bounds3 {
+            p_min: Point3::new(min, min, min),
+            p_max: Point3::new(max, max, max),
+        }
+    }
+}
 
-//     fn area(&self) -> S {
-//         let a = self.p_max - self.p_min;
-//         a.x * a.y
-//     }
 
-//     fn expand(&self, delta: S) -> Bounds2<S> {
-//         let delta_vec = Vector2::new(delta, delta);
-//         // let p_min = self.p_min - delta_vec;
-//         // let p_max = self.p_max + delta_vec;
-//         let p_min = self.p_min;
-//         let p_max = self.p_max;
-//         Bounds2 {
-//             p_min: p_min,
-//             p_max: p_max,
-//         }
-//     }
+impl<'a, S: Scalar> From<&'a Point3<S>> for Bounds3<S> {
+    fn from(p: &'a Point3<S>) -> Self {
+        Bounds3 {
+            p_min: p.clone(),
+            p_max: p.clone(),
+        }
+    }
+}
+impl<S: Scalar> From<(Point3<S>, Point3<S>)> for Bounds3<S> {
+    fn from(points: (Point3<S>, Point3<S>)) -> Self {
+        Bounds3 {
+            p_min: points.0,
+            p_max: points.1,
+        }
+    }
+}
+impl<'a, S: Scalar> From<(&'a Point3<S>, &'a Point3<S>)> for Bounds3<S> {
+    fn from(points: (&'a Point3<S>, &'a Point3<S>)) -> Self {
+        Bounds3 {
+            p_min: points.0.clone(),
+            p_max: points.1.clone(),
+        }
+    }
+}
 
-//     fn maximum_extend(&self) -> u8 {
-//         let diag = self.diagonal();
-//         if diag.x > diag.y {
-//             0
-//         } else {
-//             1
-//         }
-//     }
+impl<S: Scalar> Index<u8> for Bounds3<S> {
+    type Output = Point3<S>;
+    fn index(&self, index: u8) -> &Self::Output {
+        match index {
+            0 => &self.p_min,
+            1 => &self.p_max,
+            _ => panic!("Bounds2 Index (b[{}]) out of range", index),
+        }
+    }
+}
+impl<S: Scalar> Bounds for Bounds3<S> {
+    type Scalar = S;
+    type Point = Point3<S>;
+    type Vector = Vector3<S>;
 
-//     fn offset(&self, p: &Point2<S>) -> Vector2<S> {
-//         let mut offset = &*p - &self.p_min;
-//         if self.p_max.x > self.p_min.x {
-//             offset.x = offset.x / (self.p_max.x - self.p_min.x);
-//         }
-//         if self.p_max.y > self.p_min.y {
-//             offset.y = offset.y / (self.p_max.y - self.p_min.y);
-//         }
-//         offset
-//     }
-//     fn lerp(&self, t: &Point2<S>) -> Point2<S> {
-//         let x = super::lerp(t.x, self.p_min.x, self.p_max.x);
-//         let y = super::lerp(t.y, self.p_min.y, self.p_max.y);
-//         Point2::new(x, y)
-//     }
-// }
+    fn corner(&self, corner: u8) -> Self::Point {
+        let x = self[corner & 1].x;
+        let y = self[corner & 2].y;
+        let z = self[corner & 4].z;
+        Point3::new(x, y, z)
+    }
+    fn point_union(b: &Self, p: &Self::Point) -> Self {
+        // b.p_min.x.min(p.x)
+        // b.p_min.y.min(p.y)
+        // b.p_min.z.min(p.z)
 
-// impl<S> Default for Bounds2<S> where
-//     S: Scalar + Bounded {
-//     fn default() -> Bounds2<S> {
-//         let min = Bounded::min_value();
-//         let max = Bounded::max_value();
+        // let x_max = b.p_max.x.max(p.x);
+        // let y_max = b.p_max.y.max(p.y);
+        // let z_max = b.p_max.z.max(p.z);
+        let pmin = Point3::new(min(b.p_min.x, p.x), min(b.p_min.y, p.y), min(b.p_min.z, p.z));
+        let pmax = Point3::new(max(b.p_max.x, p.x), max(b.p_max.y, p.y), max(b.p_max.z, p.z));
+        Bounds3::from((pmin, pmax))
+    }
 
-//         Bounds2 {
-//             p_min: Point2::new(min, min),
-//             p_max: Point2::new(max, max),
-//         }
-//     }
-// }
+    fn bounds_union(b1: &Self, b2: Self) -> Self {
+        let pmin = Point3::new(min(b1.p_min.x, b2.p_min.x), min(b1.p_min.y, b2.p_min.y), min(b1.p_min.z, b2.p_min.z));
+        let pmax = Point3::new(max(b1.p_max.x, b2.p_max.x), max(b1.p_max.y, b2.p_max.y), max(b1.p_max.z, b2.p_max.z));
+        Bounds3::from((pmin, pmax))
+    }
+    fn intersect(b1: &Self, b2: &Self) -> Self {
+        let pmin = Point3::new(max(b1.p_min.x, b2.p_min.x), max(b1.p_min.y, b2.p_min.y), max(b1.p_min.z, b2.p_min.z));
+        let pmax = Point3::new(min(b1.p_max.x, b2.p_max.x), min(b1.p_max.y, b2.p_max.y), min(b1.p_max.z, b2.p_max.z));
+        Bounds3::from((pmin, pmax))
+    }
+    fn overlaps(b1: &Self, b2: &Self) -> bool {
+        let x = (b1.p_max.x >= b2.p_min.x) && (b1.p_min.x <= b2.p_max.x);
+        let y = (b1.p_max.y >= b2.p_min.y) && (b1.p_min.y <= b2.p_max.y);
+        let z = (b1.p_max.z >= b2.p_min.z) && (b1.p_min.z <= b2.p_max.z);
+        x && y && z
+    }
+    fn inside(p: &Self::Point, b: &Self) -> bool {
+        let x = p.x >= b.p_min.x && p.x <= b.p_max.x;
+        let y = p.y >= b.p_min.y && p.y <= b.p_max.y;
+        let z = p.z >= b.p_min.z && p.z <= b.p_max.z;
+        x && y && z
+    }
+    fn inside_exclusive(p: &Self::Point, b: &Self) -> bool {
+        let x = p.x >= b.p_min.x && p.x < b.p_max.x;
+        let y = p.y >= b.p_min.y && p.y < b.p_max.y;
+        let z = p.z >= b.p_min.z && p.z < b.p_max.z;
+        x && y && z
+    }
+    fn expand(b1: &Self, delta: Self::Scalar) -> Self {
+        let delta_vec = Vector3::new(delta, delta, delta);
+        let p_min = b1.p_min - delta_vec;
+        let p_max = b1.p_max + delta_vec;
+        Bounds3::from((p_min, p_max))
+    }
+    fn diagonal(&self) -> Self::Vector {
+        self.p_max - self.p_min
+    }
+    fn surface_area(&self) -> Self::Scalar {
+        let d = self.diagonal();
+        S::one() + S::one() * (d.x * d.y + d.x * d.z + d.y * d.z)
+    }
+    fn volume(&self) -> Self::Scalar {
+        let d = self.diagonal();
+        d.x * d.y * d.z
+    }
+    fn maximum_extent(&self) -> u8 {
+        let d = self.diagonal();
+        if d.x > d.y && d.x > d.z {
+            0
+        } else if d.y > d.z {
+            1
+        } else {
+            2
+        }
+    }
+    fn lerp(&self, t: &Self::Point) -> Self::Point {
+        let x = super::lerp(t.x, self.p_min.x, self.p_max.x);
+        let y = super::lerp(t.y, self.p_min.y, self.p_max.y);
+        let z = super::lerp(t.z, self.p_min.z, self.p_max.z);
+        Point3::new(x, y, z)
+    }
 
-// impl<'p, S> From<&'p Point2<S>> for Bounds2<S> where
-//     S: Scalar {
-//     fn from(t: &'p Point2<S>) -> Self {
-//         Bounds2 {
-//             p_min: t.clone(),
-//             p_max: t.clone(),
-//         }
-//     }
-// }
+    fn offset(&self, p: &Self::Point) -> Self::Vector {
+        let mut offset = &*p - &self.p_min;
+        if self.p_max.x > self.p_min.x {
+            offset.x = offset.x / (self.p_max.x - self.p_min.x);
+        }
+        if self.p_max.y > self.p_min.y {
+            offset.y = offset.y / (self.p_max.y - self.p_min.y);
+        }
+        offset
+    }
+    fn bounding_sphere(&self) -> (Self::Point, f32) {
+        let center = (self.p_min + self.p_max)  / (S::one() + S::one());
+        let radius = if Bounds::inside(&center, self) {
+            Point::distance(&center, &self.p_max).to_f32().expect("Panic on bounding sphere radius calculation cast")
+        } else {
+            S::zero().to_f32().expect("Panic on casting S::zero() to f32")
+        };
+        (center, radius)
+    }
+}
 
-// impl<S> PartialEq for Bounds2<S> where
-//     S: Scalar {
-//     fn eq(&self, other: &Bounds2<S>) -> bool {
-//         if self.p_min == other.p_min &&
-//            self.p_max == other.p_max {
-//                true
-//            } else {
-//                false
-//            }
-//     }
-// }
+

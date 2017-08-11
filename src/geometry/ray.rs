@@ -2,87 +2,96 @@
 // use cg::prelude::*;
 
 // use num::{Zero, Float};
+use std::cell::Cell;
+use std::rc::Rc;
+use std::ops::{Add, AddAssign, Neg, Sub, Mul, Div, Index, IndexMut};
+use std::cmp::{min, max};
 
-// pub trait BaseRay {
-//     fn get_position(&self) -> cg::Point3<f64>;
-// }
 
-// struct Medium {
-//     x: i32,
-// }
+use super::Scalar;
+use super::{Vector, VectorSpace, Metric};
+use super::vector::Vector3f;
+use super::Point;
+use super::point::Point3f;
 
-// struct Ray<'med> {
-//     o: cg::Point3<f64>,
-//     d: cg::Vector3<f64>,
-//     medium: Option<&'med Medium>,
-//     tmax: f64,
-//     time: f64,
-// }
+struct Medium {}
 
-// impl<'med> Default for Ray<'med> {
-//     fn default() -> Ray<'med> {
-//         Ray {
-//             o: cg::Point3::origin(),
-//             d: cg::Vector3::zero(),
-//             medium: None,
-//             tmax: Float::infinity(),
-//             time: 0.0,
-//         }
-//     }
-// }
+pub trait Ray {
+    fn point(&self, t: f32) -> Point3f;
+}
 
-// impl<'med> BaseRay for Ray<'med> {
-//     fn get_position(&self) -> cg::Point3<f64> {
-//         return self.time * (self.o + self.d);
-//     }
-// }
+#[derive(Debug, Clone)]
+struct Ray_ {
+    pub o: Point3f,
+    pub d: Vector3f,
+    pub tmax: Cell<f32>,
+    pub time: f32,
+    pub medium: Option<Rc<Medium>>,
+}
 
-// struct RayDifferential<'med> {
-//     ray: Ray<'med>,
-//     has_differential: bool,
-//     rx_origin: cg::Point3<f64>,
-//     ry_origin: cg::Point3<f64>,
-//     rx_direction: cg::Vector3<f64>,
-//     ry_direction: cg::Vector3<f64>,
-// }
+impl Ray_ {
+    fn default() -> Self {
+        Ray_ {
+            o: Point3f::zero(),
+            d: Vector3f::zero(),
+            tmax: Cell::default(),
+            time: 0.,
+            medium: None,
+        }
+    }
+    fn new(&self, o: &Point3f, d: &Vector3f, tmax: f32, time: f32, medium: Option<Rc<Medium>>) -> Ray_ {
+        Ray_ {
+            o: o.clone(),
+            d: d.clone(),
+            tmax: Cell::new(tmax),
+            time: time,
+            medium,
+        }
+    }
+}
 
-// impl<'med> Default for RayDifferential<'med> {
-//     fn default() -> RayDifferential<'med> {
-//         RayDifferential {
-//             ray: Ray::default(),
-//             has_differential: false,
-//             rx_origin: cg::Point3::origin(),
-//             ry_origin: cg::Point3::origin(),
-//             rx_direction: cg::Vector3::zero(),
-//             ry_direction: cg::Vector3::zero(),
-//         }
-//     }
-// }
+impl Ray for Ray_ {
+    fn point(&self, t: f32) -> Point3f {
+        self.o + self.d * t
+    }
 
-// impl<'med> BaseRay for RayDifferential<'med> {
-//     fn get_position(&self) -> cg::Point3<f64> {
-//         return self.ray.time * (self.ray.o + self.ray.d);
-//     }
-// }
+}
 
-// impl<'med> From<Ray<'med>> for RayDifferential<'med> {
-//     fn from(r: Ray<'med>) -> RayDifferential<'med> {
-//         RayDifferential {
-//             ray: r,
-//             has_differential: false,
-//             rx_origin: cg::Point3::origin(),
-//             ry_origin: cg::Point3::origin(),
-//             rx_direction: cg::Vector3::zero(),
-//             ry_direction: cg::Vector3::zero(),
-//         }
-//     }
-// }
+struct RayDifferential {
+    pub ray: Ray_, 
+    pub has_differential: bool,
+    pub rx_origin: Point3f,
+    pub ry_origin: Point3f,
+    pub rx_dir: Vector3f,
+    pub ry_dir: Vector3f,
+}
 
-// impl<'med> RayDifferential<'med> {
-//     fn scale_differentials(&mut self, scaler: f64) {
-//         self.rx_origin = self.ray.o + (self.rx_origin - self.ray.o) * scaler;
-//         self.ry_origin = self.ray.o + (self.ry_origin - self.ray.o) * scaler;
-//         self.rx_direction = self.ray.d + (self.rx_direction - self.ray.d) * scaler;
-//         self.ry_direction = self.ray.d + (self.ry_direction - self.ray.d) * scaler;
-//     }
-// }
+impl RayDifferential {
+    fn default() -> Self {
+        RayDifferential {
+            ray: Ray_::default(),
+            has_differential: false,
+            rx_origin: Point3f::zero(),
+            ry_origin: Point3f::zero(),
+            rx_dir: Vector3f::zero(),
+            ry_dir: Vector3f::zero(),
+        }
+    }
+    fn new(ray: &Ray_) -> RayDifferential {
+        RayDifferential {
+            ray: ray.clone(),
+            has_differential: false,
+            rx_origin: Point3f::zero(),
+            ry_origin: Point3f::zero(),
+            rx_dir: Vector3f::zero(),
+            ry_dir: Vector3f::zero(),
+        }
+    }
+
+    fn scale_differentials(&self, s: f32) {
+        self.rx_origin = self.ray.o + (self.rx_origin - self.ray.o) * s;
+        self.ry_origin = self.ray.o + (self.ry_origin - self.ray.o) * s;
+        self.rx_dir = self.ray.d + (self.rx_dir - self.ray.d) * s;
+        self.ry_dir = self.ray.d + (self.ry_dir - self.ray.d) * s;
+    }
+}

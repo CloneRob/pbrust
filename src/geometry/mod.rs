@@ -12,7 +12,10 @@ use util;
 use num;
 
 use num::{Integer, Float};
-pub trait Scalar:  Float + Integer {} 
+// pub trait Scalar:  Float + Integer {} 
+pub trait Scalar:  Float {} 
+impl Scalar for f32 {}
+impl Scalar for f64 {}
 // use ::cg;
 // use cg::BaseFloat;
 // use cg::prelude::*;

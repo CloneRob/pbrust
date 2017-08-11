@@ -7,10 +7,10 @@ use super::Scalar;
 use super::normal::{Normal2, Normal3};
 use super::{Metric, VectorSpace, Vector};
 
-type Vector2f = Vector2<f32>;
-type Vector2i = Vector2<i32>;
-type Vector3f = Vector3<f32>;
-type Vector3i = Vector3<i32>;
+pub type Vector2f = Vector2<f32>;
+pub type Vector2i = Vector2<i32>;
+pub type Vector3f = Vector3<f32>;
+pub type Vector3i = Vector3<i32>;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vector2<S: Scalar> {
