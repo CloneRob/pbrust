@@ -1,4 +1,5 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, Neg, Sub};
+use std::rc::Rc;
 
 pub mod bounds;
 pub mod ray;
@@ -6,6 +7,7 @@ pub mod transform;
 pub mod normal;
 pub mod vector;
 pub mod point;
+pub mod interaction;
 
 use std::cmp;
 use util;
@@ -74,3 +76,12 @@ pub fn lerp<S: Scalar>(t: S, v1: S, v2: S) -> S {
 pub fn radians<S: Scalar>(deg: S) -> S {
     deg.to_radians()
 }
+
+#[derive(Debug, Clone)]
+pub struct Medium {}
+
+pub struct MediumInterface {
+    inside: Option<Rc<Medium>>,
+    outside: Option<Rc<Medium>>,
+}
+

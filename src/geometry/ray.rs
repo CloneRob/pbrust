@@ -12,9 +12,7 @@ use super::{Metric, Vector, VectorSpace};
 use super::vector::Vector3f;
 use super::Point;
 use super::point::Point3f;
-
-#[derive(Debug, Clone)]
-struct Medium {}
+use super::Medium;
 
 pub trait Ray {
     fn point(&self, t: f32) -> Point3f;

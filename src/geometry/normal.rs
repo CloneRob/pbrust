@@ -6,10 +6,10 @@ use super::Scalar;
 use super::vector::{Vector2, Vector3};
 use super::{Metric, Vector, VectorSpace};
 
-type Normal2f = Normal2<f32>;
-type Normal2i = Normal2<i32>;
-type Normal3f = Normal3<f32>;
-type Normal3i = Normal3<i32>;
+pub type Normal2f = Normal2<f32>;
+pub type Normal2i = Normal2<i32>;
+pub type Normal3f = Normal3<f32>;
+pub type Normal3i = Normal3<i32>;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Normal2<S: Scalar> {
