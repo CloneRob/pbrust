@@ -1,10 +1,9 @@
 // use std::marker::Sized;
-use std::ops::{Add, AddAssign, Neg, Sub, Mul, Div, Index, IndexMut};
-use std::cmp::{min, max};
-
+use std::ops::{Add, AddAssign, Div, Index, IndexMut, Mul, Neg, Sub};
+use std::cmp::{max, min};
 
 use super::Scalar;
-use super::{Vector, VectorSpace, Metric};
+use super::{Metric, Vector, VectorSpace};
 use super::Point;
 use super::vector::{Vector2, Vector3};
 
@@ -47,10 +46,10 @@ impl<S: Scalar> Point<S> for Point2<S> {
         p1 * (S::one() - t) + p2 * t
     }
     fn min(p1: &Self, p2: &Self) -> Self {
-        Point2::new(min(p1.x, p2.x), min(p1.y, p2.y))
+        Point2::new(p1.x.min(p2.x), p1.y.min(p2.y))
     }
     fn max(p1: &Self, p2: &Self) -> Self {
-        Point2::new(max(p1.x, p2.x), max(p1.y, p2.y))
+        Point2::new(p1.x.max(p2.x), p1.y.max(p2.y))
     }
 
     fn floor(&self) -> Self {
@@ -66,10 +65,9 @@ impl<S: Scalar> Point<S> for Point2<S> {
     }
 }
 
-
 impl<S: Scalar> Point2<S> {
     pub fn new(x: S, y: S) -> Point2<S> {
-        let v = Point2 { x: x, y: y };
+        let v = Point2 { x, y };
         assert!(!v.has_nan());
         v
     }
@@ -84,7 +82,6 @@ pub struct Point3<S: Scalar> {
     pub y: S,
     pub z: S,
 }
-
 
 impl<S: Scalar> Point<S> for Point3<S> {
     fn zero() -> Self {
@@ -116,10 +113,10 @@ impl<S: Scalar> Point<S> for Point3<S> {
         p1 * (S::one() - t) + p2 * t
     }
     fn min(p1: &Self, p2: &Self) -> Self {
-        Point3::new(min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z))
+        Point3::new(p1.x.min(p2.x), p1.y.min(p2.y), p1.z.min(p2.z))
     }
     fn max(p1: &Self, p2: &Self) -> Self {
-        Point3::new(max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z))
+        Point3::new(p1.x.max(p2.x), p1.y.max(p2.y), p1.z.max(p2.z))
     }
 
     fn floor(&self) -> Self {

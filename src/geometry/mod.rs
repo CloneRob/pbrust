@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Neg, Sub, Mul, Div, DivAssign, Index, IndexMut};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, Neg, Sub};
 
 pub mod bounds;
 pub mod ray;
@@ -11,9 +11,9 @@ use std::cmp;
 use util;
 use num;
 
-use num::{Integer, Float};
-// pub trait Scalar:  Float + Integer {} 
-pub trait Scalar:  Float {} 
+use num::{Float, Integer};
+// pub trait Scalar:  Float + Integer {}
+pub trait Scalar: Float {}
 impl Scalar for f32 {}
 impl Scalar for f64 {}
 // use ::cg;
@@ -29,11 +29,12 @@ pub trait Metric<RHS = Self> {
 }
 
 pub trait VectorSpace<S: Scalar, RHS = Self>
-    where Self: Add,
-          Self: Sub,
-          Self: Mul<S>,
-          Self: Div<S>,
-          Self: Sized
+where
+    Self: Add,
+    Self: Sub,
+    Self: Mul<S>,
+    Self: Div<S>,
+    Self: Sized,
 {
     type Scalar;
     type Output;
@@ -42,9 +43,10 @@ pub trait VectorSpace<S: Scalar, RHS = Self>
 }
 
 pub trait Vector<S: Scalar>
-    where Self: VectorSpace<S>,
-          Self: Metric<Output=S>,
-          Self: Sized,
+where
+    Self: VectorSpace<S>,
+    Self: Metric<Output = S>,
+    Self: Sized,
 {
     fn zero() -> Self;
     fn unit() -> Self;
@@ -69,5 +71,5 @@ pub trait Point<S: Scalar> {
 }
 
 pub fn lerp<S: Scalar>(t: S, v1: S, v2: S) -> S {
-    return (S::one() - t) * v1 + t * v2
+    return (S::one() - t) * v1 + t * v2;
 }

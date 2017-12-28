@@ -1,11 +1,10 @@
 use std::marker::Sized;
-use std::ops::{Add, AddAssign, Neg, Sub, Mul, Div, DivAssign, Index, IndexMut};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, Neg, Sub};
 use std::convert::From;
-
 
 use super::Scalar;
 use super::normal::{Normal2, Normal3};
-use super::{Metric, VectorSpace, Vector};
+use super::{Metric, Vector, VectorSpace};
 
 pub type Vector2f = Vector2<f32>;
 pub type Vector2i = Vector2<i32>;
@@ -206,7 +205,6 @@ impl<S: Scalar> Vector3<S> {
         Vector3::new(x, y, z)
     }
 }
-
 
 impl<S: Scalar> Metric for Vector3<S> {
     type Output = S;

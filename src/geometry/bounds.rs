@@ -1,7 +1,7 @@
 use std::convert::From;
 use std::ops::Index;
 use std::iter::Iterator;
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 
 use super::Scalar;
 use super::Vector;
@@ -15,10 +15,9 @@ use super::point::{Point2, Point3};
 use num::Bounded;
 
 use std::ops::Add;
-use std::cmp::{PartialOrd, PartialEq};
+use std::cmp::{PartialEq, PartialOrd};
 
 // use ::geometry::{Interpolate};
-
 
 pub trait Bounds {
     type Scalar;
@@ -41,14 +40,14 @@ pub trait Bounds {
     fn bounding_sphere(&self) -> (Self::Point, f32);
 }
 
-
 #[derive(Copy, Clone, Debug)]
 pub struct Bounds2<S: Scalar> {
     p_min: Point2<S>,
     p_max: Point2<S>,
 }
 impl<S> Default for Bounds2<S>
-    where S: Scalar + Bounded
+where
+    S: Scalar + Bounded,
 {
     fn default() -> Bounds2<S> {
         let min = Bounded::min_value();
@@ -60,7 +59,6 @@ impl<S> Default for Bounds2<S>
         }
     }
 }
-
 
 impl<'a, S: Scalar> From<&'a Point2<S>> for Bounds2<S> {
     fn from(p: &'a Point2<S>) -> Self {
@@ -108,26 +106,19 @@ impl<S: Scalar> Bounds for Bounds2<S> {
         Point2::new(x, y)
     }
     fn point_union(b: &Self, p: &Self::Point) -> Self {
-        // b.p_min.x.min(p.x)
-        // b.p_min.y.min(p.y)
-        // b.p_min.z.min(p.z)
-
-        // let x_max = b.p_max.x.max(p.x);
-        // let y_max = b.p_max.y.max(p.y);
-        // let z_max = b.p_max.z.max(p.z);
-        let pmin = Point2::new(min(b.p_min.x, p.x), min(b.p_min.y, p.y));
-        let pmax = Point2::new(max(b.p_max.x, p.x), max(b.p_max.y, p.y));
+        let pmin = Point::min(&b.p_min, &p);
+        let pmax = Point::max(&b.p_max, &p);
         Bounds2::from((pmin, pmax))
     }
 
     fn bounds_union(b1: &Self, b2: Self) -> Self {
-        let pmin = Point2::new(min(b1.p_min.x, b2.p_min.x), min(b1.p_min.y, b2.p_min.y));
-        let pmax = Point2::new(max(b1.p_max.x, b2.p_max.x), max(b1.p_max.y, b2.p_max.y));
+        let pmin = Point::min(&b1.p_min, &b2.p_min);
+        let pmax = Point::max(&b1.p_max, &b2.p_max);
         Bounds2::from((pmin, pmax))
     }
     fn intersect(b1: &Self, b2: &Self) -> Self {
-        let pmin = Point2::new(max(b1.p_min.x, b2.p_min.x), max(b1.p_min.y, b2.p_min.y));
-        let pmax = Point2::new(min(b1.p_max.x, b2.p_max.x), min(b1.p_max.y, b2.p_max.y));
+        let pmin = Point::max(&b1.p_min, &b2.p_min);
+        let pmax = Point::min(&b1.p_max, &b2.p_max);
         Bounds2::from((pmin, pmax))
     }
     fn overlaps(b1: &Self, b2: &Self) -> bool {
@@ -189,11 +180,15 @@ impl<S: Scalar> Bounds for Bounds2<S> {
         offset
     }
     fn bounding_sphere(&self) -> (Self::Point, f32) {
-        let center = (self.p_min + self.p_max)  / (S::one() + S::one());
+        let center = (self.p_min + self.p_max) / (S::one() + S::one());
         let radius = if Bounds::inside(&center, self) {
-            Point::distance(&center, &self.p_max).to_f32().expect("Panic on bounding sphere radius calculation cast")
+            Point::distance(&center, &self.p_max)
+                .to_f32()
+                .expect("Panic on bounding sphere radius calculation cast")
         } else {
-            S::zero().to_f32().expect("Panic on casting S::zero() to f32")
+            S::zero()
+                .to_f32()
+                .expect("Panic on casting S::zero() to f32")
         };
         (center, radius)
     }
@@ -205,7 +200,8 @@ pub struct Bounds3<S: Scalar> {
     p_max: Point3<S>,
 }
 impl<S> Default for Bounds3<S>
-    where S: Scalar + Bounded
+where
+    S: Scalar + Bounded,
 {
     fn default() -> Bounds3<S> {
         let min = Bounded::min_value();
@@ -217,7 +213,6 @@ impl<S> Default for Bounds3<S>
         }
     }
 }
-
 
 impl<'a, S: Scalar> From<&'a Point3<S>> for Bounds3<S> {
     fn from(p: &'a Point3<S>) -> Self {
@@ -273,19 +268,19 @@ impl<S: Scalar> Bounds for Bounds3<S> {
         // let x_max = b.p_max.x.max(p.x);
         // let y_max = b.p_max.y.max(p.y);
         // let z_max = b.p_max.z.max(p.z);
-        let pmin = Point3::new(min(b.p_min.x, p.x), min(b.p_min.y, p.y), min(b.p_min.z, p.z));
-        let pmax = Point3::new(max(b.p_max.x, p.x), max(b.p_max.y, p.y), max(b.p_max.z, p.z));
+        let pmin = Point::min(&b.p_min, &p);
+        let pmax = Point::max(&b.p_max, &p);
         Bounds3::from((pmin, pmax))
     }
 
     fn bounds_union(b1: &Self, b2: Self) -> Self {
-        let pmin = Point3::new(min(b1.p_min.x, b2.p_min.x), min(b1.p_min.y, b2.p_min.y), min(b1.p_min.z, b2.p_min.z));
-        let pmax = Point3::new(max(b1.p_max.x, b2.p_max.x), max(b1.p_max.y, b2.p_max.y), max(b1.p_max.z, b2.p_max.z));
+        let pmin = Point::min(&b1.p_min, &b2.p_min);
+        let pmax = Point::max(&b1.p_max, &b2.p_max);
         Bounds3::from((pmin, pmax))
     }
     fn intersect(b1: &Self, b2: &Self) -> Self {
-        let pmin = Point3::new(max(b1.p_min.x, b2.p_min.x), max(b1.p_min.y, b2.p_min.y), max(b1.p_min.z, b2.p_min.z));
-        let pmax = Point3::new(min(b1.p_max.x, b2.p_max.x), min(b1.p_max.y, b2.p_max.y), min(b1.p_max.z, b2.p_max.z));
+        let pmin = Point::max(&b1.p_min, &b2.p_min);
+        let pmax = Point::min(&b1.p_max, &b2.p_max);
         Bounds3::from((pmin, pmax))
     }
     fn overlaps(b1: &Self, b2: &Self) -> bool {
@@ -351,14 +346,16 @@ impl<S: Scalar> Bounds for Bounds3<S> {
         offset
     }
     fn bounding_sphere(&self) -> (Self::Point, f32) {
-        let center = (self.p_min + self.p_max)  / (S::one() + S::one());
+        let center = (self.p_min + self.p_max) / (S::one() + S::one());
         let radius = if Bounds::inside(&center, self) {
-            Point::distance(&center, &self.p_max).to_f32().expect("Panic on bounding sphere radius calculation cast")
+            Point::distance(&center, &self.p_max)
+                .to_f32()
+                .expect("Panic on bounding sphere radius calculation cast")
         } else {
-            S::zero().to_f32().expect("Panic on casting S::zero() to f32")
+            S::zero()
+                .to_f32()
+                .expect("Panic on casting S::zero() to f32")
         };
         (center, radius)
     }
 }
-
-

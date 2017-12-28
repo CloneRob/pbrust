@@ -4,12 +4,12 @@ use std::f32;
 use std::cmp;
 use std::cmp::Ordering;
 
-pub fn minf<T: cmp::PartialOrd>(v1: T, v2: T) -> T{
+pub fn minf<T: cmp::PartialOrd>(v1: T, v2: T) -> T {
     let some_order = v1.partial_cmp(&v2);
     if let Some(ord) = some_order {
         let min_val = match ord {
             Ordering::Less => v1,
-            _ => v2
+            _ => v2,
         };
         return min_val;
     } else {
@@ -17,12 +17,12 @@ pub fn minf<T: cmp::PartialOrd>(v1: T, v2: T) -> T{
     }
 }
 
-pub fn maxf<T: cmp::PartialOrd>(v1: T, v2: T) -> T{
+pub fn maxf<T: cmp::PartialOrd>(v1: T, v2: T) -> T {
     let some_order = v1.partial_cmp(&v2);
     if let Some(ord) = some_order {
         let max_val = match ord {
             Ordering::Less => v2,
-            _ => v1
+            _ => v1,
         };
         return max_val;
     } else {
@@ -48,7 +48,6 @@ fn maxtest() {
 }
 #[test]
 #[should_panic]
-fn mintest_panic(){
+fn mintest_panic() {
     let result = minf(25f32, f32::NAN);
 }
-

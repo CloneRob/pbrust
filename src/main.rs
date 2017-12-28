@@ -8,26 +8,21 @@ use std::default::Default;
 mod util;
 mod geometry;
 
+use geometry::{bounds, transform, Scalar};
+use geometry::vector::Vector2;
 
-// use geometry::{bounds, Interpolate};
-
-// fn func<T>(delta: T) {
-//     let v2 = Vector2::new(delta, delta);
-//     let p1 = Vector2::new(delta, delta);
-//     let t = p1 - v2;
-// }
+fn func<T: Scalar>(delta: T) {
+    let v2 = Vector2::new(delta, delta);
+    let p1 = Vector2::new(delta, delta);
+    let t = p1 - v2;
+}
 
 fn main() {
     println!("Hello World");
-    // let v1 = Vector2::<f64>::unit_x();
-    // let v2 = Vector2::<f64>::unit_y();
-    // // let v1 = 1.0f64;
-    // // let v2 = 0.7f64;
-    // let alpha = 0.2f64;
+    let v1 = Vector2::<f64>::new(1.0, 0.0);
+    let v2 = Vector2::<f64>::new(0.0, 1.0);
+    let alpha = 0.2f64;
 
-    // let v3 = Interpolate::lerp(&v1, alpha, &v2);
-    // let b1  = bounds::Bounds2::<f32>::default();
-    // println!("{:?}", v3);
-    // println!("{:?}", b1);
+    let b1 = bounds::Bounds2::<f32>::default();
+    println!("{:?}", b1);
 }
-

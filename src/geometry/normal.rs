@@ -1,10 +1,10 @@
 use std::marker::Sized;
-use std::ops::{Add, AddAssign, Neg, Sub, Mul, Div, DivAssign, Index, IndexMut};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, Neg, Sub};
 use std::convert::From;
 
 use super::Scalar;
 use super::vector::{Vector2, Vector3};
-use super::{Metric, VectorSpace, Vector};
+use super::{Metric, Vector, VectorSpace};
 
 type Normal2f = Normal2<f32>;
 type Normal2i = Normal2<i32>;
@@ -27,7 +27,6 @@ impl<'a, S: Scalar> From<&'a Vector2<S>> for Normal2<S> {
         Normal2::new(v.x, v.y)
     }
 }
-
 
 impl<S: Scalar> Vector<S> for Normal2<S> {
     fn zero() -> Self {
@@ -228,7 +227,6 @@ impl<S: Scalar> Normal3<S> {
         Normal3::new(x, y, z)
     }
 }
-
 
 impl<S: Scalar> Metric for Normal3<S> {
     type Output = S;

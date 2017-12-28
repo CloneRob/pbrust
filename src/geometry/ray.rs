@@ -4,16 +4,16 @@
 // use num::{Zero, Float};
 use std::cell::Cell;
 use std::rc::Rc;
-use std::ops::{Add, AddAssign, Neg, Sub, Mul, Div, Index, IndexMut};
-use std::cmp::{min, max};
-
+use std::ops::{Add, AddAssign, Div, Index, IndexMut, Mul, Neg, Sub};
+use std::cmp::{max, min};
 
 use super::Scalar;
-use super::{Vector, VectorSpace, Metric};
+use super::{Metric, Vector, VectorSpace};
 use super::vector::Vector3f;
 use super::Point;
 use super::point::Point3f;
 
+#[derive(Debug, Clone)]
 struct Medium {}
 
 pub trait Ray {
@@ -39,7 +39,14 @@ impl Ray_ {
             medium: None,
         }
     }
-    fn new(&self, o: &Point3f, d: &Vector3f, tmax: f32, time: f32, medium: Option<Rc<Medium>>) -> Ray_ {
+    fn new(
+        &self,
+        o: &Point3f,
+        d: &Vector3f,
+        tmax: f32,
+        time: f32,
+        medium: Option<Rc<Medium>>,
+    ) -> Ray_ {
         Ray_ {
             o: o.clone(),
             d: d.clone(),
@@ -54,11 +61,10 @@ impl Ray for Ray_ {
     fn point(&self, t: f32) -> Point3f {
         self.o + self.d * t
     }
-
 }
 
 struct RayDifferential {
-    pub ray: Ray_, 
+    pub ray: Ray_,
     pub has_differential: bool,
     pub rx_origin: Point3f,
     pub ry_origin: Point3f,
@@ -88,7 +94,7 @@ impl RayDifferential {
         }
     }
 
-    fn scale_differentials(&self, s: f32) {
+    fn scale_differentials(&mut self, s: f32) {
         self.rx_origin = self.ray.o + (self.rx_origin - self.ray.o) * s;
         self.ry_origin = self.ray.o + (self.ry_origin - self.ray.o) * s;
         self.rx_dir = self.ray.d + (self.rx_dir - self.ray.d) * s;
