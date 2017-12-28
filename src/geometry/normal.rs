@@ -203,7 +203,7 @@ impl<S: Scalar> Vector<S> for Normal3<S> {
 
 impl<S: Scalar> Normal3<S> {
     pub fn new(x: S, y: S, z: S) -> Normal3<S> {
-        let v = Normal3 { x: x, y: y, z: z };
+        let v = Normal3 { x, y, z };
         assert!(!v.has_nan());
         v
     }

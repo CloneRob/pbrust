@@ -198,7 +198,7 @@ impl<S: Scalar> Vector3<S> {
         (v2, v3)
     }
 
-    pub fn cross(self, rhs: &Self) -> Self {
+    pub fn cross(&self, rhs: &Self) -> Self {
         let x = self.y * rhs.z - self.z * rhs.y;
         let y = self.z * rhs.x - self.x * rhs.z;
         let z = self.x * rhs.y - self.y * rhs.x;

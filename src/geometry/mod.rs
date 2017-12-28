@@ -16,9 +16,6 @@ use num::{Float, Integer};
 pub trait Scalar: Float {}
 impl Scalar for f32 {}
 impl Scalar for f64 {}
-// use ::cg;
-// use cg::BaseFloat;
-// use cg::prelude::*;
 
 pub trait Metric<RHS = Self> {
     type Output;
@@ -72,4 +69,8 @@ pub trait Point<S: Scalar> {
 
 pub fn lerp<S: Scalar>(t: S, v1: S, v2: S) -> S {
     return (S::one() - t) * v1 + t * v2;
+}
+
+pub fn radians<S: Scalar>(deg: S) -> S {
+    deg.to_radians()
 }

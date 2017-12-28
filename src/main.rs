@@ -8,21 +8,17 @@ use std::default::Default;
 mod util;
 mod geometry;
 
-use geometry::{bounds, transform, Scalar};
+use geometry::{Vector, VectorSpace, Metric, Point, Scalar};
+use geometry::point::Point3;
 use geometry::vector::Vector2;
-
-fn func<T: Scalar>(delta: T) {
-    let v2 = Vector2::new(delta, delta);
-    let p1 = Vector2::new(delta, delta);
-    let t = p1 - v2;
-}
+use geometry::transform::{Matrix4, Transform};
 
 fn main() {
-    println!("Hello World");
-    let v1 = Vector2::<f64>::new(1.0, 0.0);
-    let v2 = Vector2::<f64>::new(0.0, 1.0);
-    let alpha = 0.2f64;
-
-    let b1 = bounds::Bounds2::<f32>::default();
-    println!("{:?}", b1);
+    let point = Point3::unit();
+    if let Ok(T) = Transform::new(Matrix4::<f32>::new()) {
+        if let Ok(K) = Transform::new(Matrix4::<f32>::new()) {
+            let p = &K * &T * &point;
+            println!("{:?}", p);
+        }
+    }
 }
